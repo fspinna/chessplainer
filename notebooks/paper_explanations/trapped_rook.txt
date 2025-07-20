@@ -1,0 +1,40 @@
+
+    \definecolor{shapb2}{HTML}{67001F}
+\definecolor{shapa3}{HTML}{F8BFA3}
+\definecolor{shapb3}{HTML}{F8F0EC}
+\definecolor{shape4}{HTML}{F7B99B}
+\definecolor{shapa5}{HTML}{D5E7F0}
+\definecolor{shapb5}{HTML}{4C98C6}
+\definecolor{shapd5}{HTML}{FBD0B9}
+\definecolor{shape5}{HTML}{E1ECF3}
+\definecolor{shapb6}{HTML}{EBF1F4}
+\definecolor{shapd6}{HTML}{D9E9F1}
+
+    \newgame
+    \chessboard[
+      setfen=8/4k3/1p1p4/pr1Pp3/4P3/PP1K4/1R6/8 w - - 0 31,
+      boardfontencoding=LSBC1,
+      pgfstyle=color,
+      opacity=0.7,
+      color=shapb2,
+  colorbackfield={b2},
+  color=shapa3,
+  colorbackfield={a3},
+  color=shapb3,
+  colorbackfield={b3},
+  color=shape4,
+  colorbackfield={e4},
+  color=shapa5,
+  colorbackfield={a5},
+  color=shapb5,
+  colorbackfield={b5},
+  color=shapd5,
+  colorbackfield={d5},
+  color=shape5,
+  colorbackfield={e5},
+  color=shapb6,
+  colorbackfield={b6},
+  color=shapd6,
+  colorbackfield={d6}
+    ]
+    

@@ -1,0 +1,58 @@
+
+    \definecolor{shapa2}{HTML}{F9EAE1}
+\definecolor{shapf2}{HTML}{FBE3D6}
+\definecolor{shapb3}{HTML}{F6B496}
+\definecolor{shapg3}{HTML}{F9E9DF}
+\definecolor{shapf4}{HTML}{67001F}
+\definecolor{shapa5}{HTML}{D5E7F0}
+\definecolor{shapc5}{HTML}{E8F0F4}
+\definecolor{shapf6}{HTML}{D05447}
+\definecolor{shapg6}{HTML}{D9E9F1}
+\definecolor{shaph6}{HTML}{FCDECC}
+\definecolor{shapd7}{HTML}{E4EEF3}
+\definecolor{shape7}{HTML}{8AC0DB}
+\definecolor{shapf7}{HTML}{DEEBF2}
+\definecolor{shaph7}{HTML}{EEF3F5}
+\definecolor{shapf8}{HTML}{80BAD8}
+\definecolor{shaph8}{HTML}{3F8DC0}
+
+    \newgame
+    \chessboard[
+      setfen=5rkq/3prp1p/5RpP/p1p5/5Q2/1B4P1/P4PK1/8 w - - 0 1,
+      boardfontencoding=LSBC1,
+      pgfstyle=color,
+      opacity=0.7,
+      color=shapa2,
+  colorbackfield={a2},
+  color=shapf2,
+  colorbackfield={f2},
+  color=shapb3,
+  colorbackfield={b3},
+  color=shapg3,
+  colorbackfield={g3},
+  color=shapf4,
+  colorbackfield={f4},
+  color=shapa5,
+  colorbackfield={a5},
+  color=shapc5,
+  colorbackfield={c5},
+  color=shapf6,
+  colorbackfield={f6},
+  color=shapg6,
+  colorbackfield={g6},
+  color=shaph6,
+  colorbackfield={h6},
+  color=shapd7,
+  colorbackfield={d7},
+  color=shape7,
+  colorbackfield={e7},
+  color=shapf7,
+  colorbackfield={f7},
+  color=shaph7,
+  colorbackfield={h7},
+  color=shapf8,
+  colorbackfield={f8},
+  color=shaph8,
+  colorbackfield={h8}
+    ]
+    

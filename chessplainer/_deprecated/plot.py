@@ -2,10 +2,8 @@ import chess
 from matplotlib import colors as mcolors
 from matplotlib import pyplot as plt
 
-
-def rgba_to_hex(rgba):
-    r, g, b = [int(255 * x) for x in rgba[:3]]
-    return f"{r:02X}{g:02X}{b:02X}"
+from chessplainer._deprecated.constants import MATE_VALUE
+from chessplainer.plot import rgba_to_hex
 
 
 def board_to_latex_xskak(fen, pieces_idxs, scores, cmap="RdBu", absolute=True):
@@ -14,7 +12,7 @@ def board_to_latex_xskak(fen, pieces_idxs, scores, cmap="RdBu", absolute=True):
 
     # Normalize with symmetric scale
     if absolute:
-        absmax = 1
+        absmax = MATE_VALUE
     else:
         absmax = max(abs(min(scores_.values())), abs(max(scores_.values())))
     norm = mcolors.TwoSlopeNorm(vmin=-absmax, vcenter=0, vmax=absmax)
@@ -41,7 +39,7 @@ def board_to_latex_xskak(fen, pieces_idxs, scores, cmap="RdBu", absolute=True):
     # Final LaTeX output
     latex_code = f"""
     {color_def_block}
-
+    
     \\newgame
     \\chessboard[
       setfen={fen},

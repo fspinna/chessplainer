@@ -1,15 +1,15 @@
 import chess
 import chess.engine
 import chess.svg
-import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from shap import KernelExplainer
 from sklearn.base import BaseEstimator, RegressorMixin
-import pandas as pd
 
-from chessplainer.constants import MATE_VALUE
-from chessplainer.plot import board_to_latex_xskak
+from chessplainer._deprecated.constants import MATE_VALUE
+from chessplainer._deprecated.plot import board_to_latex_xskak
 
 
 def min_max_norm(x, vmin=-MATE_VALUE, vmax=MATE_VALUE):
@@ -17,8 +17,15 @@ def min_max_norm(x, vmin=-MATE_VALUE, vmax=MATE_VALUE):
 
 
 class StockfishWrapper(BaseEstimator, RegressorMixin):
-    def __init__(self, path=None, fit_analyze_time=1, predict_analyze_time=0.1, output_improvement_delta=False,
-                 **kwargs):
+    def __init__(
+        self,
+        path=None,
+        fit_analyze_time=1,
+        predict_analyze_time=0.1,
+        output_improvement_delta=False,
+        mate_value=MATE_VALUE,
+        **kwargs
+    ):
         self.path = path
         self.fit_analyze_time = fit_analyze_time
         self.predict_analyze_time = predict_analyze_time
@@ -27,6 +34,7 @@ class StockfishWrapper(BaseEstimator, RegressorMixin):
             self.engine = chess.engine.SimpleEngine.popen_uci("stockfish")
         else:
             self.engine = chess.engine.SimpleEngine.popen_uci(path)
+        self.mate_value = mate_value
 
         self.base_score_ = None
         self.base_eval_ = None
@@ -38,26 +46,28 @@ class StockfishWrapper(BaseEstimator, RegressorMixin):
         # Saves the evaluation of the "base" board
         assert len(X) == 1  # Only one board is expected for fitting.
         self.base_board_ = X[0]
-        self.base_eval_ = self.engine.analyse(X[0], chess.engine.Limit(time=self.fit_analyze_time))["score"]
+        self.base_eval_ = self.engine.analyse(
+            X[0], chess.engine.Limit(time=self.fit_analyze_time)
+        )["score"]
         # if self.base_eval_.is_mate():
-        #     self.base_score_ = (self.base_eval_.white().mate() > 0) * MATE_VALUE
+        #     self.base_score_ = (self.base_eval_.white().mate() > 0) * self.mate_value
         if self.base_eval_.is_mate():
             # If it's a mate score: positive means White is mating, negative means Black is mating
             if self.base_eval_.white().mate() > 0:
-                self.base_score_ = MATE_VALUE
+                self.base_score_ = self.mate_value
             elif self.base_eval_.white().mate() == 0:
                 if self.base_eval_.white() == chess.engine.MateGivenType():
-                    self.base_score_ = MATE_VALUE
+                    self.base_score_ = self.mate_value
                 else:
-                    self.base_score_ = -MATE_VALUE
+                    self.base_score_ = -self.mate_value
             else:
-                self.base_score_ = -MATE_VALUE
+                self.base_score_ = -self.mate_value
         else:
             self.base_score_ = self.base_eval_.white().cp / 100
         return self
 
     def predict(self, boards):
-        scores = self._analyze(boards, self.fit_analyze_time)
+        scores = self._analyze(boards, self.predict_analyze_time)
         numerical_evals = list()
         for i, score in enumerate(scores):
             if score is np.nan:
@@ -67,14 +77,14 @@ class StockfishWrapper(BaseEstimator, RegressorMixin):
                 if score.is_mate():
                     # If it's a mate score: positive means White is mating, negative means Black is mating
                     if score.white().mate() > 0:
-                        numerical_evals.append(MATE_VALUE)
+                        numerical_evals.append(self.mate_value)
                     elif score.white().mate() == 0:
                         if score.white() == chess.engine.MateGivenType():
-                            numerical_evals.append(MATE_VALUE)
+                            numerical_evals.append(self.mate_value)
                         else:
-                            numerical_evals.append(-MATE_VALUE)
+                            numerical_evals.append(-self.mate_value)
                     else:
-                        numerical_evals.append(-MATE_VALUE)
+                        numerical_evals.append(-self.mate_value)
                 else:
                     current_score = score.white().cp / 100
                     if not self.output_improvement_delta:
@@ -83,7 +93,7 @@ class StockfishWrapper(BaseEstimator, RegressorMixin):
                         numerical_evals.append(current_score - self.base_score_)
 
         self.predict_evals_ = np.array(numerical_evals)
-        return np.clip(np.array(numerical_evals), -MATE_VALUE, MATE_VALUE)
+        return np.clip(np.array(numerical_evals), -self.mate_value, self.mate_value)
 
     def _analyze(self, boards, time=0.1):
         infos = list()
@@ -93,7 +103,7 @@ class StockfishWrapper(BaseEstimator, RegressorMixin):
                 info = self.engine.analyse(board, chess.engine.Limit(time=time))
                 infos.append(info["score"])
             # elif board.is_checkmate():
-            #     infos.append(chess.engine.PovScore(MATE_VALUE, not board.turn))
+            #     infos.append(chess.engine.PovScore(self.mate_value, not board.turn))
             else:
                 flipped = board.copy()
                 flipped.turn = not board.turn
@@ -101,7 +111,7 @@ class StockfishWrapper(BaseEstimator, RegressorMixin):
                     info = self.engine.analyse(flipped, chess.engine.Limit(time=time))
                     infos.append(info["score"])
                 # elif board.is_checkmate():
-                #     infos.append(chess.engine.PovScore(MATE_VALUE, board.turn))
+                #     infos.append(chess.engine.PovScore(self.mate_value, board.turn))
                 else:
                     infos.append(np.nan)
             # else:
@@ -109,59 +119,84 @@ class StockfishWrapper(BaseEstimator, RegressorMixin):
         return infos
 
 
-class ChessShap(object):
-    def __init__(self, board, wrappend_engine, exp=KernelExplainer, **kwargs):
+class ChessExplainer(object):
+    def __init__(
+        self,
+        board,
+        wrappend_engine,
+        explainer=KernelExplainer,
+        mate_value=MATE_VALUE,
+        explainer_fit_kwargs=None,
+        explainer_predict_kwargs=None,
+        **kwargs
+    ):
         self.board = board
         self.engine = wrappend_engine
-        self.exp = exp
+        self.explainer = explainer
+        self.mate_value = mate_value
+        self.explainer_fit_kwargs = (
+            explainer_fit_kwargs if explainer_fit_kwargs is not None else {}
+        )
+        self.explainer_predict_kwargs = (
+            explainer_predict_kwargs if explainer_predict_kwargs is not None else {}
+        )
 
         self.pieces = dict(
             sorted(
-                ((sq, pc) for sq, pc in board.piece_map().items()
-                 if pc.symbol().lower() != 'k'),
-                key=lambda kv: kv[0]
+                (
+                    (sq, pc)
+                    for sq, pc in board.piece_map().items()
+                    if pc.symbol().lower() != "k"
+                ),
+                key=lambda kv: kv[0],
             )
         )
 
-        self.shap_values_ = None
-        self.mapped_shap_values = None
-        self.explainer_ = None
-
-    def predict(self, boards):
-        y = self.engine.predict(boards)
-        return y
-
-    def shap_values(self, nsamples):
-        self.shap_values_, self.explainer_ = chess_shap_values(self.board, self, nsamples, self.exp)
         df = pd.DataFrame([self.pieces], index=["piece"]).T
-        df["value"] = self.shap_values_.ravel()
         df["piece"] = df["piece"].apply(lambda x: x.unicode_symbol())
         df = df.reset_index()
         df["square"] = df["index"].apply(lambda x: chess.square_name(x))
-        df = df[["square", "piece", "value"]]
+        df = df[["square", "piece"]]
         df["feature_name"] = df["piece"] + " " + df["square"]
         self.df_ = df
-        return self.shap_values_
+        self.feature_names = df["feature_name"].tolist()
 
-    def to_svg(self, size=350, local_range=False, **kwargs):
-        shap_values = self.shap_values_
+        self.explanation_ = None
+        self.explainer_ = None
+        self.values_ = None
+
+    def explain(self):
+        self.explanation_, self.explainer_ = get_explanation(
+            board=self.board,
+            engine=self.engine,
+            explainer=self.explainer,
+            explainer_fit_kwargs=self.explainer_fit_kwargs,
+            explainer_predict_kwargs=self.explainer_predict_kwargs,
+        )
+        self.values_ = self.explanation_.values
+        self.df_["value"] = self.values_.ravel()
+        return self.explanation_
+
+    def to_svg(self, size=350, local_range=False, cmap="RdBu_r", **kwargs):
+        shap_values = self.values_[0]
 
         if not local_range:
-            min_val = -MATE_VALUE
-            max_val = MATE_VALUE
+            min_val = -self.mate_value
+            max_val = self.mate_value
         else:
             absmax_val = np.abs(shap_values).max()
             min_val = -absmax_val
             max_val = absmax_val
 
-        shap_values = np.clip(self.shap_values_[0], -MATE_VALUE, MATE_VALUE)
+        shap_values = np.clip(shap_values, -self.mate_value, self.mate_value)
 
         norm = matplotlib.colors.TwoSlopeNorm(vmin=min_val, vcenter=0, vmax=max_val)
-        cmap = plt.get_cmap('coolwarm_r')
+        cmap = plt.get_cmap(cmap)
 
         board_piece_map = self.board.piece_map()
         board_piece_map_wo_kings = {
-            sq: piece for sq, piece in board_piece_map.items()
+            sq: piece
+            for sq, piece in board_piece_map.items()
             if piece.symbol() not in ["k", "K"]
         }
 
@@ -182,13 +217,13 @@ class ChessShap(object):
         )
         return board
 
-    def to_latex(self, cmap="RdBu", local_range=False):
+    def to_latex(self, cmap="RdBu_r", local_range=False):
         return board_to_latex_xskak(
             fen=self.board.fen(),
             pieces_idxs=self.pieces.keys(),
-            scores=self.shap_values_[0],
+            scores=self.values_[0],
             cmap=cmap,
-            absolute=not local_range
+            absolute=not local_range,
         )
 
 
@@ -218,57 +253,43 @@ def mask_chessboard(zs, original_board):
         # board = board.copy()
         for square_idx, square in enumerate(z):  # for each occupied square
             if square:  # if the square is kept
-                mapped_square = sorted(list(board_piece_map_wo_kings.keys()))[square_idx]
-                masked_piece_map[mapped_square] = board_piece_map_wo_kings[mapped_square]  # add the corresponding piece
+                mapped_square = sorted(list(board_piece_map_wo_kings.keys()))[
+                    square_idx
+                ]
+                masked_piece_map[mapped_square] = board_piece_map_wo_kings[
+                    mapped_square
+                ]  # add the corresponding piece
                 masked_piece_map = {**masked_piece_map, **board_piece_map_only_kings}
         board = original_board.copy()
         board.set_piece_map(masked_piece_map)
         boards.append(board)
-        # if board.is_valid():
-        #     boards.append(board)
-        # else:
-        #     boards.append(chess.Board("R7/5k2/8/8/2r5/8/5K2/8 w - - 0 1"))  # append a draw
     return boards
 
 
-def chess_shap_values(board, engine, nsamples, exp=KernelExplainer, verbose=True):
+def get_explanation(
+    board,
+    engine,
+    explainer=KernelExplainer,
+    explainer_fit_kwargs=None,
+    explainer_predict_kwargs=None,
+):
+    if explainer_fit_kwargs is None:
+        explainer_fit_kwargs = dict()
+    if explainer_predict_kwargs is None:
+        explainer_predict_kwargs = dict()
+
     n_pieces = len(board.piece_map()) - 2  # -2 because we don't consider kings
 
     def f(zs):
         boards = mask_chessboard(zs, board)
         return engine.predict(boards)
 
-    explainer = exp(f, data=np.zeros((1, n_pieces)))
-    shap_values = explainer.shap_values(np.ones((1, n_pieces)), nsamples=nsamples, silent=not verbose)
-    return shap_values, explainer
-
+    explainer_ = explainer(
+        f, np.zeros((1, n_pieces)), **explainer_fit_kwargs
+    )  # function, data/masker
+    explanation = explainer_(np.ones((1, n_pieces)), **explainer_predict_kwargs)
+    return explanation, explainer_
 
 
 if __name__ == "__main__":
-    # board = chess.Board("5k2/4ppp1/8/8/2K5/5R2/8/8 w - - 0 1")
-    # engine = StockfishWrapper()
-    # chesshap = ChessShap(board, engine)
-    # print(chesshap.board_eval)
-    # shap_values = chesshap.shap_values(100)
     pass
-
-    # board = chess.Board("8/8/8/7k/8/3K4/1Q6/8 w - - 0 1")  # white to mate
-    # board = chess.Board("8/6q1/8/8/8/5k2/8/4K3 b - - 0 1")  # black to mate
-    # # board = chess.Board()
-    # board = chess.Board("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")  # black to move
-    # # board = chess.Board("7k/8/6Q1/8/8/6K1/8/8 b - - 0 1")  # stalemate
-    # board = chess.Board("Q7/4pkp1/4p1p1/8/2K2P2/5R2/8/8 w - - 0 1")
-    # engine = StockfishWrapper()
-    # # shap_engine = ChessShap(board, engine)
-    # # info = shap_engine.analyze([board])
-    # # print("Score:", info)
-    # # print(info.relative.cp)
-    # # print(shap_engine.predict([board]))
-    #
-    # chesshap = ChessShap(board, engine)
-    # shap_values = chesshap.shap_values(100)
-    # # chesshap.plot()
-    #
-    # # mask_chessboard(np.array([[1,1,1]]), board)
-    #
-    # # chess.square Gets a square number by file and rank index.
