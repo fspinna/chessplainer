@@ -1,1 +1,0 @@
-MATE_VALUE = 100
