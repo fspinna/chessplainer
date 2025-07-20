@@ -303,7 +303,3 @@ def get_explanation(
     )  # function, data/masker
     explanation = explainer_(np.ones((1, n_pieces)), **explainer_predict_kwargs)
     return explanation, explainer_
-
-
-if __name__ == "__main__":
-    pass
