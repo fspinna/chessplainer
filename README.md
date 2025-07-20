@@ -1,6 +1,6 @@
 # chessplainer
 
-A Python package for explaining chess positions and moves using SHAP. It provides utilities for analyzing games, visualizing positions, and generating insights for players and developers.
+A Python package for explaining chess positions and moves using SHAP. 
 
 ![](assets/example.png)
 
