@@ -80,7 +80,8 @@ class EngineWrapper(BaseEstimator, ClassifierMixin):
         scores = self._analyze(boards)
         numerical_evals = list()
         for i, score in enumerate(scores):
-            if score is np.nan:
+            # print(i, score)
+            if isinstance(score, float) and np.isnan(score):
                 if self.output_improvement_delta:
                     numerical_evals.append([0, 0, 0])
                 else:
@@ -121,7 +122,9 @@ class EngineWrapper(BaseEstimator, ClassifierMixin):
         self.predict_boards_ = boards
         for board in boards:
             if board.fen() != self.base_board_.fen():
-                if board.is_valid():
+                if (
+                    board.is_valid() or board.status().value == 256
+                ):  # bad castling rights
                     info = self.engine.analyse(
                         board, chess.engine.Limit(**self.predict_limit_kwargs)
                     )
