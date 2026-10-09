@@ -1,15 +1,20 @@
 # chessplainer: explain chess positions with SHAP
 
+[![PyPI](https://img.shields.io/pypi/v/chessplainer)](https://pypi.org/project/chessplainer/)
+[![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)](https://pypi.org/project/chessplainer/)
+[![CEUR-WS](https://img.shields.io/badge/CEUR--WS-Vol--4097-blue)](https://ceur-ws.org/Vol-4097/paper10.pdf)
+[![arXiv](https://img.shields.io/badge/arXiv-2510.25775-b31b1b)](https://arxiv.org/abs/2510.25775)
+
 **chessplainer** is a Python package for **explainable AI (XAI) in chess**. Given a position, it uses
 [SHAP](https://github.com/shap/shap) (Shapley values) on top of the **Stockfish** chess engine to
 measure how much each piece on the board contributes to the evaluation: which pieces push the
 position towards a win for White, and which towards a win for Black.
 
-The method is described in the paper
-[Towards Piece-by-Piece Explanations for Chess Positions with SHAP](https://ceur-ws.org/Vol-4097/paper10.pdf),
-presented at the AI4HGI 2025 workshop at ECAI 2025 (also on [arXiv](https://arxiv.org/abs/2510.25775)).
+Official implementation of the paper
+[*Towards Piece-by-Piece Explanations for Chess Positions with SHAP*](https://ceur-ws.org/Vol-4097/paper10.pdf)
+(AI4HGI workshop at ECAI 2025, CEUR-WS Vol-4097; also on [arXiv](https://arxiv.org/abs/2510.25775)).
 
-![Chess position explained with SHAP: each piece's square is colored by its Shapley value (red pieces increase White's winning chances, blue pieces decrease them), next to a SHAP waterfall plot of the same values](assets/example.png)
+![Chess position explained with SHAP: each piece's square is colored by its Shapley value (red pieces increase White's winning chances, blue pieces decrease them), next to a SHAP waterfall plot of the same values](https://raw.githubusercontent.com/fspinna/chessplainer/main/assets/example.png)
 
 ## How it works
 
@@ -22,15 +27,13 @@ presented at the AI4HGI 2025 workshop at ECAI 2025 (also on [arXiv](https://arxi
 ## Installation
 
 ```bash
-pip install git+https://github.com/fspinna/chessplainer.git
+pip install chessplainer
 ```
 
-or, from a clone of this repository:
+or the latest development version:
 
 ```bash
-git clone https://github.com/fspinna/chessplainer.git
-cd chessplainer
-pip install .
+pip install git+https://github.com/fspinna/chessplainer.git
 ```
 
 You also need the **Stockfish** engine: download it from the
@@ -70,7 +73,7 @@ With the default `wdl_model="lichess"` the outputs are White's win and loss prob
 Stockfish WDL models (`"sf"`, `"sf16"`, ...) they are win, draw and loss. Use the engine as a context
 manager (or call `engine.close()`) so the Stockfish process is shut down when you are done.
 
-See [`notebooks/example.ipynb`](notebooks/example.ipynb) for a complete example. The positions from the
+See [`notebooks/example.ipynb`](https://github.com/fspinna/chessplainer/blob/main/notebooks/example.ipynb) for a complete example. The positions from the
 [paper](https://ceur-ws.org/Vol-4097/paper10.pdf) are in `chessplainer.POSITIONS`, and `board_svg(board)` draws any board in the same style as the explanations.
 
 ## Work in progress: piece interactions
@@ -78,8 +81,9 @@ See [`notebooks/example.ipynb`](notebooks/example.ipynb) for a complete example.
 Shapley values split the credit for what pieces achieve together (a queen and rook mating net, a
 defender holding an attacker) evenly between them. We are working on **Shapley interactions** between
 pieces, based on [shapiq](https://github.com/mmschlk/shapiq), to show which pieces work together and
-which neutralize each other. The API is experimental and may change; see
-[`notebooks/example_interactions.ipynb`](notebooks/example_interactions.ipynb) for a preview.
+which neutralize each other. The API is experimental and may change; to try it,
+`pip install "chessplainer[shapiq]"` (Python >= 3.12) and see
+[`notebooks/example_interactions.ipynb`](https://github.com/fspinna/chessplainer/blob/main/notebooks/example_interactions.ipynb).
 
 ## Citation
 
