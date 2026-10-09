@@ -1,5 +1,11 @@
 /engines/
 
+# local notebooks and paper material, not part of the repository
+/notebooks/example_2.ipynb
+/notebooks/example_3.ipynb
+/notebooks/example_4.ipynb
+/notebooks/paper_explanations/
+
 
 ### macOS ###
 # General
