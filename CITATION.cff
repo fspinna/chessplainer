@@ -1,0 +1,58 @@
+cff-version: 1.2.0
+message: "If you use chessplainer, please cite the paper below."
+title: "chessplainer: explain chess positions with SHAP"
+type: software
+authors:
+  - family-names: Spinnato
+    given-names: Francesco
+repository-code: "https://github.com/fspinna/chessplainer"
+keywords:
+  - chess
+  - explainable AI
+  - SHAP
+  - Shapley values
+  - Stockfish
+preferred-citation:
+  type: conference-paper
+  title: "Towards Piece-by-Piece Explanations for Chess Positions with SHAP"
+  authors:
+    - family-names: Spinnato
+      given-names: Francesco
+  collection-type: proceedings
+  collection-title: "Proceedings of the First Workshop on Artificial Intelligence for Human-Game Interaction (AI4HGI 2025) co-located with the 28th European Conference on Artificial Intelligence (ECAI 2025)"
+  conference:
+    name: "First Workshop on Artificial Intelligence for Human-Game Interaction (AI4HGI 2025)"
+    city: Bologna
+    country: IT
+    date-start: 2025-10-25
+    date-end: 2025-10-25
+  editors:
+    - family-names: Villata
+      given-names: Sabrina
+    - family-names: Rapp
+      given-names: Amon
+    - family-names: Melhart
+      given-names: David
+    - family-names: Barthet
+      given-names: Matthew
+    - family-names: Preuss
+      given-names: Mike
+    - family-names: Barbero
+      given-names: Giulio
+  publisher:
+    name: CEUR-WS.org
+  volume: 4097
+  issn: "1613-0073"
+  year: 2025
+  url: "https://ceur-ws.org/Vol-4097/paper10.pdf"
+references:
+  - type: article
+    title: "Towards Piece-by-Piece Explanations for Chess Positions with SHAP"
+    authors:
+      - family-names: Spinnato
+        given-names: Francesco
+    year: 2025
+    month: 10
+    journal: "arXiv preprint arXiv:2510.25775"
+    doi: "10.48550/arXiv.2510.25775"
+    url: "https://arxiv.org/abs/2510.25775"
