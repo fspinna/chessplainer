@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chessplainer"
+dynamic = ["version"]
+description = "Explain chess positions with SHAP: which pieces make Stockfish think a position is winning, drawn or lost."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Francesco Spinnato" }]
+keywords = [
+    "chess",
+    "shap",
+    "shapley values",
+    "explainable ai",
+    "xai",
+    "interpretability",
+    "stockfish",
+    "chess engine",
+    "python-chess",
+    "feature attribution",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Games/Entertainment :: Board Games",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "shap",
+    "chess",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+# piece interactions (chessplainer.interactions); shapiq requires Python >= 3.12
+shapiq = ["shapiq; python_version >= '3.12'"]
+
+[project.urls]
+Homepage = "https://github.com/fspinna/chessplainer"
+Source = "https://github.com/fspinna/chessplainer"
+Issues = "https://github.com/fspinna/chessplainer/issues"
+
+[tool.setuptools.packages.find]
+include = ["chessplainer*"]
+
+[tool.setuptools_scm]
+# version comes from the latest git tag (e.g. v0.2.0 -> 0.2.0)
